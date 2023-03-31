@@ -8,6 +8,14 @@ void ProsesSelesai(object sender, string pesan)
     Console.WriteLine(pesan);
 }
 
+EventCart e2 = new EventCart();
+e2.ProsesCart += ProsesCart;
+
+void ProsesCart(object sender, string pesan)
+{
+    Console.WriteLine(pesan);
+}
+
 void Display()
 {
     Console.Clear();
@@ -25,6 +33,7 @@ void Display()
 
 var keluar = false;
 var modelProduk = new List<Produk>();
+var modelCart = new List<Cart>();
 
 while(!keluar)
 {
@@ -68,16 +77,107 @@ while(!keluar)
             Console.ReadLine();
             break;
         case "2" :
+            Console.WriteLine("===========================");
+            Console.WriteLine("Edit produk");
+            Console.WriteLine("===========================");
+            Console.WriteLine("Masukan sku : ");
+            string eSku = Console.ReadLine();
+
+            Produk editProduk = modelProduk.Find(p => p.Sku == eSku);
+            
+            if(editProduk != null)
+            {
+                Console.Write("Masukan nama baru : ");
+                string namaBaru = Console.ReadLine();
+
+                Console.Write("Masukan stock : ");
+                string stockBaru = Console.ReadLine();
+
+                Console.Write("Masukan harga : ");
+                string hargaBaru = Console.ReadLine();
+
+                int intStockBaru = Convert.ToInt32(stockBaru);
+                int intHargaBaru = Convert.ToInt32(hargaBaru);
+
+                editProduk.Nama = namaBaru;
+                editProduk.Stock = intStockBaru;
+                editProduk.Harga = intHargaBaru;
+
+                e.TriggerEvent("Produk berhasil di update");
+            }
+            else
+            {
+               e.TriggerEvent("Sku yang dimasukan tidak cocok"); 
+            }
+            
+            Console.ReadLine();
             break;
         case "3" :
+            Console.WriteLine("===========================");
+            Console.WriteLine("List produk");
+            Console.WriteLine("===========================");
+            if (modelProduk.Count > 0)
+            {
+                Console.WriteLine("|    SKU    |       NAMA      |  STOCK  |   HARGA   |");
+                foreach(var index in modelProduk)
+                {
+                    Console.WriteLine("|    {0}    |       {1}       |   {2}   |    {3}    |", index.Sku, index.Nama, index.Stock, index.Harga);
+                }
+            }
+            else
+            {
+                e.TriggerEvent("Produk masih kosong");
+            }
+
+            Console.ReadLine();
             break;
         case "4" :
+            Console.WriteLine("===========================");
+            Console.WriteLine("Hapus produk");
+            Console.WriteLine("===========================");
+            Console.Write("Masukan sku : ");
+            string hSku = Console.ReadLine();
+
+            var hapusProduk = modelProduk.Find(h => h.Sku == hSku);
+
+            if(hapusProduk != null)
+            {
+                modelProduk.Remove(hapusProduk);
+                e.TriggerEvent("Produk berhasil dihapus");
+            }
+            else
+            {
+                e.TriggerEvent("Sku yang di masukan tidak cocok");
+            }
+            Console.ReadLine();
             break;
         case "5" :
+            Console.WriteLine("===========================");
+            Console.WriteLine("Add produk cart");
+            Console.WriteLine("===========================");
+            Console.Write("Masukan sku : ");
+            string chartSku = Console.ReadLine();
+
+            var skuProduk = modelProduk.Find(c => c.Sku == chartSku);
+
+            if(skuProduk != null)
+            {   
+                // Cart cartBaru = new Cart(skuProduk.Sku, skuProduk.Nama, +=1, skuProduk.Harga);
+                // modelCart.Add(cartBaru);
+                // e2.TriggerCartEvent("Berhasil di tambahkan ke cart");
+            }
+
+            Console.ReadLine();
             break;
         case "6" :
+                    Console.WriteLine("===========================");
+            Console.WriteLine("Edit produk");
+            Console.WriteLine("===========================");
             break;
         case "7" :
+                    Console.WriteLine("===========================");
+            Console.WriteLine("Edit produk");
+            Console.WriteLine("===========================");
             break;
         case "8" :
             e.TriggerEvent("Anda telah keluar");
