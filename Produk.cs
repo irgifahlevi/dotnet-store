@@ -5,7 +5,6 @@ public class Produk
     public int Stock { get; set; }
     public int Harga { get; set; }
 
-
     public Produk(string sku, string nama, int stock, int harga)
     {
         Sku = sku;

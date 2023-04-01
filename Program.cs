@@ -27,7 +27,8 @@ void Display()
     Console.WriteLine("5. Add produk ke cart");
     Console.WriteLine("6. Hapus produk dari cart");
     Console.WriteLine("7. Tampilkan cart");
-    Console.WriteLine("8. Keluar");
+    Console.WriteLine("8. Checkout");
+    Console.WriteLine("9. Keluar");
     Console.Write("Masukkan pilihan : ");
 }
 
@@ -113,16 +114,18 @@ while(!keluar)
             Console.ReadLine();
             break;
         case "3" :
-            Console.WriteLine("===========================");
-            Console.WriteLine("List produk");
-            Console.WriteLine("===========================");
+            Console.WriteLine("+-----------+-----------------+---------+-----------+");
+            Console.WriteLine("|                     List produk                   |");
             if (modelProduk.Count > 0)
             {
+                Console.WriteLine("+-----------+-----------------+---------+-----------+");
                 Console.WriteLine("|    SKU    |       NAMA      |  STOCK  |   HARGA   |");
+                Console.WriteLine("+-----------+-----------------+---------+-----------+");
                 foreach(var index in modelProduk)
                 {
-                    Console.WriteLine("|    {0}    |       {1}       |   {2}   |    {3}    |", index.Sku, index.Nama, index.Stock, index.Harga);
+                    Console.WriteLine("|    {0}    | {1,-15} | {2,7} | {3,10} |", index.Sku, index.Nama, index.Stock, index.Harga);
                 }
+                Console.WriteLine("+-----------+-----------------+---------+-----------+");
             }
             else
             {
@@ -158,28 +161,138 @@ while(!keluar)
             Console.Write("Masukan sku : ");
             string chartSku = Console.ReadLine();
 
-            var skuProduk = modelProduk.Find(c => c.Sku == chartSku);
+            var produk = modelProduk.Find(c => c.Sku == chartSku);
 
-            if(skuProduk != null)
+            if(produk != null)
             {   
-                // Cart cartBaru = new Cart(skuProduk.Sku, skuProduk.Nama, +=1, skuProduk.Harga);
-                // modelCart.Add(cartBaru);
-                // e2.TriggerCartEvent("Berhasil di tambahkan ke cart");
+                Console.Write("Masukan jumlah produk : ");
+                string qty = Console.ReadLine();
+                int intQty = Convert.ToInt32(qty);
+
+                if(intQty <= produk.Stock)
+                {
+                    produk.Stock -= intQty;
+                    var cartItem = modelCart.Find(c => c.Sku == produk.Sku && c.Nama == produk.Nama);
+                    if (cartItem != null)
+                    {
+                        cartItem.Quantity += intQty;
+                        cartItem.Harga += produk.Harga * intQty;
+                    }
+                    else
+                    {
+                        cartItem = new Cart(produk.Sku, produk.Nama, intQty, produk.Harga * intQty);
+                        modelCart.Add(cartItem);
+                    }
+                    e2.TriggerCartEvent("Berhasil dimasukan ke cart");
+                }
+                else
+                {
+                    e2.TriggerCartEvent("Stok produk tidak mencukupi");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Produk tidak ada");
+            }
+            Console.ReadLine();
+            break;
+        case "6" :
+            Console.WriteLine("===========================");
+            Console.WriteLine("Hapus produk dari cart");
+            Console.WriteLine("===========================");
+            Console.Write("Masukan sku : ");
+            string hCart = Console.ReadLine();
+
+            var produkCart = modelCart.Find(c => c.Sku == hCart);
+
+            if(produkCart != null)
+            {
+                var produk2 = modelProduk.Find(c => c.Sku == produkCart.Sku);
+
+                produk2.Stock += produkCart.Quantity;
+
+                modelCart.Remove(produkCart);
+
+                e2.TriggerCartEvent("Produk berhasil di hapus dari cart");
+            }
+            else
+            {
+                e2.TriggerCartEvent("Produk tidak ada di cart");
+            }
+            Console.ReadLine();
+            break;
+        case "7" :
+            Console.WriteLine("===========================");
+            Console.WriteLine("Cart produk");
+            Console.WriteLine("===========================");
+            if (modelCart.Count > 0)
+            {
+                Console.WriteLine("|    SKU|    NAMA|   Quantity|   HARGA|");
+                foreach(var index in modelCart)
+                {
+                    Console.WriteLine("|    {0}|    {1}|    {2}|    {3}|", index.Sku, index.Nama, index.Quantity, index.Harga);
+                }
+            }
+            else
+            {
+                e.TriggerEvent("Cart produk masih kosong");
+            }
+            Console.ReadLine();
+            break;
+        case "8" :
+            Console.WriteLine("===========================");
+            Console.WriteLine("Cekout produk");
+            Console.WriteLine("===========================");
+            if (modelCart.Count > 0)
+            {
+                Console.WriteLine("|    SKU|    NAMA|   Quantity|   HARGA|");
+                foreach(var index in modelCart)
+                {
+                    Console.WriteLine("|    {0}|    {1}|    {2}|    {3}|", index.Sku, index.Nama, index.Quantity, index.Harga);
+                }
+
+                int totalProduk = 0;
+
+                foreach(var index in modelCart)
+                {
+                    totalProduk += index.Quantity;
+                }
+
+                int totalHarga = modelCart.Sum(item => item.Harga);
+
+                Console.WriteLine("Total produk : {0}, Total bayar : {1}", totalProduk, totalHarga);
+
+                Console.Write("Checkout sekarang? bayar/cancel : ");
+                string inputCheckout = Console.ReadLine();
+
+                if(inputCheckout == "bayar")
+                {
+                    foreach(var item in modelCart)
+                    {
+                        var produk3 = modelProduk.Find(p => p.Sku == item.Sku);
+                        produk3.Stock += item.Quantity;
+                    }
+                    modelCart.Clear();
+
+                    e2.TriggerCartEvent("Pembayaran berhasil. Terima kasih!");
+                }
+                else if(inputCheckout == "cancel")
+                {
+                    e2.TriggerCartEvent("Pembayaran dibatalkan");
+                }
+                else
+                {
+                    e2.TriggerCartEvent("Inputan tidak valid");
+                }
+            }
+            else
+            {
+                e2.TriggerCartEvent("Cart masih kosong, add cart terlebih dahulu");
             }
 
             Console.ReadLine();
             break;
-        case "6" :
-                    Console.WriteLine("===========================");
-            Console.WriteLine("Edit produk");
-            Console.WriteLine("===========================");
-            break;
-        case "7" :
-                    Console.WriteLine("===========================");
-            Console.WriteLine("Edit produk");
-            Console.WriteLine("===========================");
-            break;
-        case "8" :
+        case "9" :
             e.TriggerEvent("Anda telah keluar");
             keluar = true;
             Console.ReadLine();
